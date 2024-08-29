@@ -5,117 +5,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SVG Image Composer</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-
-        #canvas-container {
-            border: 1px solid #ccc;
-            margin-top: 10px;
-            width: 500px;
-            height: 500px;
-            position: relative;
-        }
-
-        #canvas {
-            width: 100%;
-            height: 100%;
-        }
-
-        #controls {
-            margin-top: 20px;
-        }
-
-        #controls label {
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        #controls input[type="text"],
-        #controls input[type="url"],
-        #controls select,
-        #controls input[type="number"] {
-            width: 100%;
-            padding: 5px;
-            margin-bottom: 10px;
-        }
-
-        #controls input[type="color"],
-        #controls input[type="range"] {
-            padding: 5px;
-            margin-bottom: 10px;
-        }
-
-        #controls button {
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        #controls button:hover {
-            background-color: #45a049;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-    <h1>SVG Image Composer</h1>
+    <div class="container">
+        <div class="controls">
+            <h2>SVG Image Composer</h2>
+            <label for="background-image">Background Image:</label>
+            <input type="file" id="background-image" accept="image/*">
+            <br><br>
 
-    <div id="controls">
-        <label for="background">Background Image:</label>
-        <input type="file" id="background" accept="image/*"><br>
+            <div id="foreground-images">
+                <h3>Foreground Images</h3>
+                <button id="add-foreground">Add Foreground Image</button>
+            </div>
+            <br>
 
-        <label for="foreground">Foreground Image:</label>
-        <input type="file" id="foreground" accept="image/*"><br>
+            <div id="text-inputs">
+                <h3>Text Inputs</h3>
+                <button id="add-text">Add Text Input</button>
+            </div>
+            <br>
 
-        <label for="opacity">Foreground Opacity:</label>
-        <input type="range" id="opacity" min="0" max="100" value="100"><br>
+            <button id="download-svg">Download SVG</button>
+        </div>
 
-        <label for="text">Text:</label>
-        <input type="text" id="text" placeholder="Enter your text here"><br>
-
-        <label for="font">Font:</label>
-        <select id="font">
-            <option value="Arial">Arial</option>
-            <option value="Times New Roman">Times New Roman</option>
-            <option value="Courier New">Courier New</option>
-        </select><br>
-
-        <label for="fontSize">Font Size:</label>
-        <input type="number" id="fontSize" value="30"><br>
-
-        <label for="color">Text Color:</label>
-        <input type="color" id="color" value="#000000"><br>
-
-        <label>
-            <input type="checkbox" id="bold"> Bold
-        </label><br>
-
-        <label>
-            <input type="checkbox" id="italic"> Italic
-        </label><br>
-
-        <label>
-            <input type="checkbox" id="strikethrough"> Strikethrough
-        </label><br>
-
-        <label for="api">API Endpoint:</label>
-        <input type="url" id="api" placeholder="Enter API URL"><br>
-
-        <button onclick="fetchDataAndCompose()">Fetch Data & Compose</button>
+        <div class="preview-container">
+            <h3>Preview</h3>
+            <div id="preview"></div>
+        </div>
     </div>
 
-    <div id="canvas-container">
-        <svg id="canvas" width="500" height="500"></svg>
-    </div>
-
-    <button onclick="downloadSVG()">Download SVG</button>
-
-    <!-- Load your JavaScript file here -->
     <script src="script.js"></script>
 </body>
 

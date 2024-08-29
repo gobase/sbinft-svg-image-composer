@@ -1,0 +1,10 @@
+.container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.controls {
+    width: 30%;
+}
+
+.preview
