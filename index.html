@@ -4,52 +4,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SVG Image Composer</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>SVG Composer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+        }
+
+        #controls {
+            flex: 0.3;
+            margin-right: 20px;
+        }
+
+        #controls label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        #controls input[type="text"],
+        #controls input[type="url"],
+        #controls select,
+        #controls input[type="number"] {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+
+        #controls input[type="color"],
+        #controls input[type="range"] {
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+
+        #controls button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #controls button:hover {
+            background-color: #45a049;
+        }
+
+        #canvas-container {
+            margin-top: 40px;
+            border: 2px dotted #666;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: left;
+            justify-content: left;
+            resize: both;
+            overflow: auto;
+            width: 800px;
+            height: 600px;
+            cursor: move;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="left-panel">
-            <h2>Upload and Configure</h2>
+    <div id="controls">
+        <h1>SVG Composer</h1>
+        <label for="background">Background Image:</label>
+        <input type="file" id="background" accept="image/*"><br>
 
-            <label for="bg-image">Background Image:</label>
-            <input type="file" id="bg-image" accept="image/*"><br>
+        <label for="foreground">Foreground Image:</label>
+        <input type="file" id="foreground" accept="image/*"><br>
 
-            <label for="fg-image">Foreground Images:</label>
-            <input type="file" id="fg-image" accept="image/*" multiple><br>
+        <label for="opacity">Foreground Opacity:</label>
+        <input type="range" id="opacity" min="0" max="100" value="100"><br>
 
-            <label for="text-input">Text Input:</label>
-            <input type="text" id="text-input" placeholder="Enter text"><br>
+        <label for="text">Text:</label>
+        <input type="text" id="text" placeholder="Enter your text here"><br>
 
-            <label for="font-select">Font:</label>
-            <select id="font-select">
-                <option value="Arial">Arial</option>
-                <option value="Times New Roman">Times New Roman</option>
-                <option value="MS Gothic">MS Gothic</option>
-                <option value="Noto Sans JP">Noto Sans JP</option>
-            </select><br>
+        <label for="font">Font:</label>
+        <select id="font">
+            <option value="Arial">Arial</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Courier New">Courier New</option>
+        </select><br>
 
-            <label for="font-size">Font Size:</label>
-            <input type="number" id="font-size" value="20"><br>
+        <label for="fontSize">Font Size:</label>
+        <input type="number" id="fontSize" value="30"><br>
 
-            <label for="opacity-range">Foreground Image Opacity:</label>
-            <input type="range" id="opacity-range" min="0" max="100" value="100"><br>
+        <label for="color">Text Color:</label>
+        <input type="color" id="color" value="#000000"><br>
 
-            <label for="api-endpoint">API Endpoint:</label>
-            <input type="text" id="api-endpoint" placeholder="Enter API endpoint"><br>
+        <label>
+            <input type="checkbox" id="bold"> Bold
+        </label><br>
 
-            <button id="add-text">Add Text</button>
-            <button id="add-fg-image">Add Foreground Image</button>
-            <button id="generate-svg">Generate SVG</button>
-        </div>
-        <div class="right-panel">
-            <h2>Preview</h2>
-            <div id="preview-area">
-                <!-- SVG will be inserted here -->
-            </div>
-        </div>
+        <label>
+            <input type="checkbox" id="italic"> Italic
+        </label><br>
+
+        <label>
+            <input type="checkbox" id="strikethrough"> Strikethrough
+        </label><br>
+
+        <label for="api">API Endpoint:</label>
+        <input type="url" id="api" placeholder="Enter API URL"><br>
+
+        <button onclick="fetchDataAndCheckAPI()">Fetch Data & Check</button>
+        <button onclick="downloadSVG()">Download SVG</button>
     </div>
+
+    <div id="canvas-container">
+        <svg id="canvas" width="500" height="500"></svg>
+    </div>
+
     <script src="script.js"></script>
 </body>
 
