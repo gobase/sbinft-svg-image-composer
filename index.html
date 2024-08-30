@@ -10,33 +10,46 @@
 
 <body>
     <div class="container">
-        <div class="controls">
-            <h2>SVG Image Composer</h2>
-            <label for="background-image">Background Image:</label>
-            <input type="file" id="background-image" accept="image/*">
-            <br><br>
+        <div class="left-panel">
+            <h2>Upload and Configure</h2>
 
-            <div id="foreground-images">
-                <h3>Foreground Images</h3>
-                <button id="add-foreground">Add Foreground Image</button>
-            </div>
-            <br>
+            <label for="bg-image">Background Image:</label>
+            <input type="file" id="bg-image" accept="image/*"><br>
 
-            <div id="text-inputs">
-                <h3>Text Inputs</h3>
-                <button id="add-text">Add Text Input</button>
-            </div>
-            <br>
+            <label for="fg-image">Foreground Images:</label>
+            <input type="file" id="fg-image" accept="image/*" multiple><br>
 
-            <button id="download-svg">Download SVG</button>
+            <label for="text-input">Text Input:</label>
+            <input type="text" id="text-input" placeholder="Enter text"><br>
+
+            <label for="font-select">Font:</label>
+            <select id="font-select">
+                <option value="Arial">Arial</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="MS Gothic">MS Gothic</option>
+                <option value="Noto Sans JP">Noto Sans JP</option>
+            </select><br>
+
+            <label for="font-size">Font Size:</label>
+            <input type="number" id="font-size" value="20"><br>
+
+            <label for="opacity-range">Foreground Image Opacity:</label>
+            <input type="range" id="opacity-range" min="0" max="100" value="100"><br>
+
+            <label for="api-endpoint">API Endpoint:</label>
+            <input type="text" id="api-endpoint" placeholder="Enter API endpoint"><br>
+
+            <button id="add-text">Add Text</button>
+            <button id="add-fg-image">Add Foreground Image</button>
+            <button id="generate-svg">Generate SVG</button>
         </div>
-
-        <div class="preview-container">
-            <h3>Preview</h3>
-            <div id="preview"></div>
+        <div class="right-panel">
+            <h2>Preview</h2>
+            <div id="preview-area">
+                <!-- SVG will be inserted here -->
+            </div>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 
