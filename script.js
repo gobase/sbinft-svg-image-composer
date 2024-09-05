@@ -1,6 +1,7 @@
 let backgroundImage, foregroundImage;
 let svgWidth = 500,
   svgHeight = 500;
+let backgroundImageState = { x: 0, y: 0, width: svgWidth, height: svgHeight };
 
 document.getElementById("background").addEventListener("change", function (e) {
   const reader = new FileReader();
@@ -9,6 +10,7 @@ document.getElementById("background").addEventListener("change", function (e) {
     backgroundImage.onload = function () {
       svgWidth = this.width;
       svgHeight = this.height;
+      backgroundImageState = { x: 0, y: 0, width: svgWidth, height: svgHeight };
       document.getElementById("canvas").setAttribute("width", svgWidth);
       document.getElementById("canvas").setAttribute("height", svgHeight);
       updateCanvas();
@@ -68,8 +70,10 @@ function updateCanvas() {
       "href",
       backgroundImage.src
     );
-    bgImage.setAttribute("width", svgWidth);
-    bgImage.setAttribute("height", svgHeight);
+    bgImage.setAttribute("width", backgroundImageState.width);
+    bgImage.setAttribute("height", backgroundImageState.height);
+    bgImage.setAttribute("x", backgroundImageState.x);
+    bgImage.setAttribute("y", backgroundImageState.y);
     bgImage.setAttribute("id", "background-img");
     svg.appendChild(bgImage);
   }
@@ -164,12 +168,18 @@ function makeElementDraggableAndResizable(element, isBackground = false) {
         element.setAttribute("x", mouseX);
         element.setAttribute("y", mouseY);
       }
+      if (isBackground) {
+        backgroundImageState.x = newX;
+        backgroundImageState.y = newY;
+      }
     } else if (isResizing) {
       const newWidth = startWidth + (mouseX - startX);
       const newHeight = startHeight + (mouseY - startY);
       element.setAttribute("width", newWidth);
       element.setAttribute("height", newHeight);
       if (isBackground) {
+        backgroundImageState.width = newWidth;
+        backgroundImageState.height = newHeight;
         svgWidth = newWidth;
         svgHeight = newHeight;
         svg.setAttribute("width", svgWidth);
