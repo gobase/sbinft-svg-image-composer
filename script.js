@@ -132,23 +132,63 @@ function makeElementDraggableAndResizable(element, isBackground = false) {
 
   let isDragging = false;
   let isResizing = false;
-  let startX, startY, startWidth, startHeight;
+  let resizeHandle = "";
+  let startX, startY, startWidth, startHeight, startLeft, startTop;
 
   element.addEventListener("mousedown", startDragOrResize);
   document.addEventListener("mousemove", dragOrResize);
   document.addEventListener("mouseup", stopDragOrResize);
+  element.addEventListener("mousemove", updateCursor);
+
+  function updateCursor(e) {
+    const rect = element.getBoundingClientRect();
+    const edge = 8; // Distance from edge to activate resize cursor
+
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const isTop = y < edge;
+    const isBottom = y > rect.height - edge;
+    const isLeft = x < edge;
+    const isRight = x > rect.width - edge;
+
+    if (isTop && isLeft) element.style.cursor = "nw-resize";
+    else if (isTop && isRight) element.style.cursor = "ne-resize";
+    else if (isBottom && isLeft) element.style.cursor = "sw-resize";
+    else if (isBottom && isRight) element.style.cursor = "se-resize";
+    else if (isTop) element.style.cursor = "n-resize";
+    else if (isBottom) element.style.cursor = "s-resize";
+    else if (isLeft) element.style.cursor = "w-resize";
+    else if (isRight) element.style.cursor = "e-resize";
+    else element.style.cursor = "move";
+  }
 
   function startDragOrResize(e) {
-    if (e.shiftKey) {
+    e.preventDefault();
+    const rect = element.getBoundingClientRect();
+    const edge = 8;
+
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const isTop = y < edge;
+    const isBottom = y > rect.height - edge;
+    const isLeft = x < edge;
+    const isRight = x > rect.width - edge;
+
+    if (isTop || isBottom || isLeft || isRight) {
       isResizing = true;
-      startWidth = parseFloat(element.getAttribute("width"));
-      startHeight = parseFloat(element.getAttribute("height"));
+      resizeHandle = element.style.cursor;
     } else {
       isDragging = true;
     }
-    startX = e.clientX - parseFloat(element.getAttribute("x") || 0);
-    startY = e.clientY - parseFloat(element.getAttribute("y") || 0);
-    e.preventDefault();
+
+    startX = e.clientX;
+    startY = e.clientY;
+    startWidth = parseFloat(element.getAttribute("width"));
+    startHeight = parseFloat(element.getAttribute("height"));
+    startLeft = parseFloat(element.getAttribute("x"));
+    startTop = parseFloat(element.getAttribute("y"));
   }
 
   function dragOrResize(e) {
@@ -160,8 +200,10 @@ function makeElementDraggableAndResizable(element, isBackground = false) {
     const mouseY = (e.clientY - CTM.f) / CTM.d;
 
     if (isDragging) {
-      const newX = mouseX - startX;
-      const newY = mouseY - startY;
+      const dx = mouseX - startX;
+      const dy = mouseY - startY;
+      const newX = startLeft + dx;
+      const newY = startTop + dy;
       element.setAttribute("x", newX);
       element.setAttribute("y", newY);
       if (element.tagName === "text") {
@@ -173,13 +215,65 @@ function makeElementDraggableAndResizable(element, isBackground = false) {
         backgroundImageState.y = newY;
       }
     } else if (isResizing) {
-      const newWidth = startWidth + (mouseX - startX);
-      const newHeight = startHeight + (mouseY - startY);
+      let newWidth = startWidth;
+      let newHeight = startHeight;
+      let newX = startLeft;
+      let newY = startTop;
+
+      const dx = mouseX - startX;
+      const dy = mouseY - startY;
+
+      switch (resizeHandle) {
+        case "nw-resize":
+          newWidth = startWidth - dx;
+          newHeight = startHeight - dy;
+          newX = startLeft + dx;
+          newY = startTop + dy;
+          break;
+        case "ne-resize":
+          newWidth = startWidth + dx;
+          newHeight = startHeight - dy;
+          newY = startTop + dy;
+          break;
+        case "sw-resize":
+          newWidth = startWidth - dx;
+          newHeight = startHeight + dy;
+          newX = startLeft + dx;
+          break;
+        case "se-resize":
+          newWidth = startWidth + dx;
+          newHeight = startHeight + dy;
+          break;
+        case "n-resize":
+          newHeight = startHeight - dy;
+          newY = startTop + dy;
+          break;
+        case "s-resize":
+          newHeight = startHeight + dy;
+          break;
+        case "w-resize":
+          newWidth = startWidth - dx;
+          newX = startLeft + dx;
+          break;
+        case "e-resize":
+          newWidth = startWidth + dx;
+          break;
+      }
+
+      // Ensure minimum size
+      newWidth = Math.max(newWidth, 20);
+      newHeight = Math.max(newHeight, 20);
+
       element.setAttribute("width", newWidth);
       element.setAttribute("height", newHeight);
+      element.setAttribute("x", newX);
+      element.setAttribute("y", newY);
+
       if (isBackground) {
         backgroundImageState.width = newWidth;
         backgroundImageState.height = newHeight;
+        backgroundImageState.x = newX;
+        backgroundImageState.y = newY;
         svgWidth = newWidth;
         svgHeight = newHeight;
         svg.setAttribute("width", svgWidth);
