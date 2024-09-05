@@ -163,6 +163,15 @@ function makeElementDraggableAndResizable(element, isBackground = false) {
     else element.style.cursor = "move";
   }
 
+  function getMousePosition(evt) {
+    const svg = document.getElementById("canvas");
+    const CTM = svg.getScreenCTM();
+    return {
+      x: (evt.clientX - CTM.e) / CTM.a,
+      y: (evt.clientY - CTM.f) / CTM.d,
+    };
+  }
+
   function startDragOrResize(e) {
     e.preventDefault();
     const rect = element.getBoundingClientRect();
@@ -183,8 +192,9 @@ function makeElementDraggableAndResizable(element, isBackground = false) {
       isDragging = true;
     }
 
-    startX = e.clientX;
-    startY = e.clientY;
+    const mousePos = getMousePosition(e);
+    startX = mousePos.x;
+    startY = mousePos.y;
     startWidth = parseFloat(element.getAttribute("width"));
     startHeight = parseFloat(element.getAttribute("height"));
     startLeft = parseFloat(element.getAttribute("x"));
@@ -194,21 +204,18 @@ function makeElementDraggableAndResizable(element, isBackground = false) {
   function dragOrResize(e) {
     if (!isDragging && !isResizing) return;
 
-    const svg = document.getElementById("canvas");
-    const CTM = svg.getScreenCTM();
-    const mouseX = (e.clientX - CTM.e) / CTM.a;
-    const mouseY = (e.clientY - CTM.f) / CTM.d;
+    const mousePos = getMousePosition(e);
 
     if (isDragging) {
-      const dx = mouseX - startX;
-      const dy = mouseY - startY;
+      const dx = mousePos.x - startX;
+      const dy = mousePos.y - startY;
       const newX = startLeft + dx;
       const newY = startTop + dy;
       element.setAttribute("x", newX);
       element.setAttribute("y", newY);
       if (element.tagName === "text") {
-        element.setAttribute("x", mouseX);
-        element.setAttribute("y", mouseY);
+        element.setAttribute("x", mousePos.x);
+        element.setAttribute("y", mousePos.y);
       }
       if (isBackground) {
         backgroundImageState.x = newX;
@@ -220,8 +227,8 @@ function makeElementDraggableAndResizable(element, isBackground = false) {
       let newX = startLeft;
       let newY = startTop;
 
-      const dx = mouseX - startX;
-      const dy = mouseY - startY;
+      const dx = mousePos.x - startX;
+      const dy = mousePos.y - startY;
 
       switch (resizeHandle) {
         case "nw-resize":
