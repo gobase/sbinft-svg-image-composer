@@ -2,6 +2,13 @@ let backgroundImage, foregroundImage;
 let svgWidth = 500,
   svgHeight = 500;
 let backgroundImageState = { x: 0, y: 0, width: svgWidth, height: svgHeight };
+let foregroundImageState = {
+  x: svgWidth / 4,
+  y: svgHeight / 4,
+  width: svgWidth / 2,
+  height: svgHeight / 2,
+};
+let textState = { x: svgWidth / 2, y: svgHeight * 0.9 };
 
 document.getElementById("background").addEventListener("change", function (e) {
   const reader = new FileReader();
@@ -59,7 +66,7 @@ function updateCanvas() {
   svg.setAttribute("width", svgWidth);
   svg.setAttribute("height", svgHeight);
 
-  // Add background image
+  // Add background image (unchanged)
   if (backgroundImage) {
     const bgImage = document.createElementNS(
       "http://www.w3.org/2000/svg",
@@ -78,7 +85,7 @@ function updateCanvas() {
     svg.appendChild(bgImage);
   }
 
-  // Add foreground image
+  // Add foreground image (with preserved position)
   if (foregroundImage) {
     const fgImage = document.createElementNS(
       "http://www.w3.org/2000/svg",
@@ -89,23 +96,23 @@ function updateCanvas() {
       "href",
       foregroundImage
     );
-    fgImage.setAttribute("width", svgWidth / 2);
-    fgImage.setAttribute("height", svgHeight / 2);
-    fgImage.setAttribute("x", svgWidth / 4);
-    fgImage.setAttribute("y", svgHeight / 4);
+    fgImage.setAttribute("width", foregroundImageState.width);
+    fgImage.setAttribute("height", foregroundImageState.height);
+    fgImage.setAttribute("x", foregroundImageState.x);
+    fgImage.setAttribute("y", foregroundImageState.y);
     fgImage.setAttribute("opacity", opacity);
     fgImage.setAttribute("id", "foreground-img");
     svg.appendChild(fgImage);
   }
 
-  // Add text
+  // Add text (with preserved position)
   if (text) {
     const svgText = document.createElementNS(
       "http://www.w3.org/2000/svg",
       "text"
     );
-    svgText.setAttribute("x", svgWidth / 2);
-    svgText.setAttribute("y", svgHeight * 0.9);
+    svgText.setAttribute("x", textState.x);
+    svgText.setAttribute("y", textState.y);
     svgText.setAttribute("text-anchor", "middle");
     svgText.setAttribute("font-family", font);
     svgText.setAttribute("font-size", fontSize);
@@ -216,8 +223,12 @@ function makeElementDraggableAndResizable(element, isBackground = false) {
       if (element.tagName === "text") {
         element.setAttribute("x", mousePos.x);
         element.setAttribute("y", mousePos.y);
-      }
-      if (isBackground) {
+        textState.x = mousePos.x;
+        textState.y = mousePos.y;
+      } else if (element.id === "foreground-img") {
+        foregroundImageState.x = newX;
+        foregroundImageState.y = newY;
+      } else if (isBackground) {
         backgroundImageState.x = newX;
         backgroundImageState.y = newY;
       }
@@ -277,6 +288,22 @@ function makeElementDraggableAndResizable(element, isBackground = false) {
       element.setAttribute("y", newY);
 
       if (isBackground) {
+        backgroundImageState.width = newWidth;
+        backgroundImageState.height = newHeight;
+        backgroundImageState.x = newX;
+        backgroundImageState.y = newY;
+        svgWidth = newWidth;
+        svgHeight = newHeight;
+        svg.setAttribute("width", svgWidth);
+        svg.setAttribute("height", svgHeight);
+      }
+
+      if (element.id === "foreground-img") {
+        foregroundImageState.width = newWidth;
+        foregroundImageState.height = newHeight;
+        foregroundImageState.x = newX;
+        foregroundImageState.y = newY;
+      } else if (isBackground) {
         backgroundImageState.width = newWidth;
         backgroundImageState.height = newHeight;
         backgroundImageState.x = newX;
