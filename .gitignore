@@ -1,0 +1,54 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Dependency directories
+node_modules/
+bower_components/
+
+# Build directories
+dist/
+build/
+
+# IDE or Editor settings
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environmental variables
+.env
+
+# Temporary files
+tmp/
+temp/
+
+# Compiled files
+*.out
+*.exe
+
+# Yarn Integrity file
+.yarn-integrity
+
+# Coverage directory used by testing tools
+coverage/
+
+# Cache directories
+.cache/
+npm-cache/
+
+# Package-lock and yarn-lock
+package-lock.json
+yarn.lock
+
+# Generated files from CSS preprocessors (like SASS/LESS)
+*.css.map
+
+# TypeScript compilation output
+*.tsbuildinfo
+*.d.ts

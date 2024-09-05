@@ -1,10 +1,19 @@
 let backgroundImage, foregroundImage;
+let svgWidth = 500,
+  svgHeight = 500;
 
 document.getElementById("background").addEventListener("change", function (e) {
   const reader = new FileReader();
   reader.onload = function (event) {
-    backgroundImage = event.target.result;
-    updateCanvas();
+    backgroundImage = new Image();
+    backgroundImage.onload = function () {
+      svgWidth = this.width;
+      svgHeight = this.height;
+      document.getElementById("canvas").setAttribute("width", svgWidth);
+      document.getElementById("canvas").setAttribute("height", svgHeight);
+      updateCanvas();
+    };
+    backgroundImage.src = event.target.result;
   };
   reader.readAsDataURL(e.target.files[0]);
 });
@@ -45,6 +54,8 @@ function updateCanvas() {
 
   const svg = document.getElementById("canvas");
   svg.innerHTML = ""; // Clear the canvas
+  svg.setAttribute("width", svgWidth);
+  svg.setAttribute("height", svgHeight);
 
   // Add background image
   if (backgroundImage) {
@@ -55,10 +66,11 @@ function updateCanvas() {
     bgImage.setAttributeNS(
       "http://www.w3.org/1999/xlink",
       "href",
-      backgroundImage
+      backgroundImage.src
     );
-    bgImage.setAttribute("width", "100%");
-    bgImage.setAttribute("height", "100%");
+    bgImage.setAttribute("width", svgWidth);
+    bgImage.setAttribute("height", svgHeight);
+    bgImage.setAttribute("id", "background-img");
     svg.appendChild(bgImage);
   }
 
@@ -73,10 +85,10 @@ function updateCanvas() {
       "href",
       foregroundImage
     );
-    fgImage.setAttribute("width", "50%");
-    fgImage.setAttribute("height", "50%");
-    fgImage.setAttribute("x", "25%");
-    fgImage.setAttribute("y", "25%");
+    fgImage.setAttribute("width", svgWidth / 2);
+    fgImage.setAttribute("height", svgHeight / 2);
+    fgImage.setAttribute("x", svgWidth / 4);
+    fgImage.setAttribute("y", svgHeight / 4);
     fgImage.setAttribute("opacity", opacity);
     fgImage.setAttribute("id", "foreground-img");
     svg.appendChild(fgImage);
@@ -88,8 +100,8 @@ function updateCanvas() {
       "http://www.w3.org/2000/svg",
       "text"
     );
-    svgText.setAttribute("x", "50%");
-    svgText.setAttribute("y", "90%");
+    svgText.setAttribute("x", svgWidth / 2);
+    svgText.setAttribute("y", svgHeight * 0.9);
     svgText.setAttribute("text-anchor", "middle");
     svgText.setAttribute("font-family", font);
     svgText.setAttribute("font-size", fontSize);
@@ -102,58 +114,73 @@ function updateCanvas() {
     svg.appendChild(svgText);
   }
 
-  // Make the foreground image and text draggable
-  makeDraggable();
+  // Make the background image, foreground image and text draggable and resizable
+  makeElementDraggableAndResizable(
+    document.getElementById("background-img"),
+    true
+  );
+  makeElementDraggableAndResizable(document.getElementById("foreground-img"));
+  makeElementDraggableAndResizable(document.getElementById("svg-text"));
 }
 
-function makeDraggable() {
-  const svg = document.getElementById("canvas");
-  const fgImage = document.getElementById("foreground-img");
-  const svgText = document.getElementById("svg-text");
+function makeElementDraggableAndResizable(element, isBackground = false) {
+  if (!element) return;
 
-  if (fgImage) {
-    fgImage.addEventListener("mousedown", startDrag);
-    fgImage.addEventListener("mousemove", drag);
-    fgImage.addEventListener("mouseup", endDrag);
-    fgImage.addEventListener("mouseleave", endDrag);
+  let isDragging = false;
+  let isResizing = false;
+  let startX, startY, startWidth, startHeight;
+
+  element.addEventListener("mousedown", startDragOrResize);
+  document.addEventListener("mousemove", dragOrResize);
+  document.addEventListener("mouseup", stopDragOrResize);
+
+  function startDragOrResize(e) {
+    if (e.shiftKey) {
+      isResizing = true;
+      startWidth = parseFloat(element.getAttribute("width"));
+      startHeight = parseFloat(element.getAttribute("height"));
+    } else {
+      isDragging = true;
+    }
+    startX = e.clientX - parseFloat(element.getAttribute("x") || 0);
+    startY = e.clientY - parseFloat(element.getAttribute("y") || 0);
+    e.preventDefault();
   }
 
-  if (svgText) {
-    svgText.addEventListener("mousedown", startDrag);
-    svgText.addEventListener("mousemove", drag);
-    svgText.addEventListener("mouseup", endDrag);
-    svgText.addEventListener("mouseleave", endDrag);
-  }
+  function dragOrResize(e) {
+    if (!isDragging && !isResizing) return;
 
-  let selectedElement = null;
-  let offset = {};
+    const svg = document.getElementById("canvas");
+    const CTM = svg.getScreenCTM();
+    const mouseX = (e.clientX - CTM.e) / CTM.a;
+    const mouseY = (e.clientY - CTM.f) / CTM.d;
 
-  function startDrag(event) {
-    selectedElement = event.target;
-    offset = getMousePosition(event);
-    offset.x -= parseFloat(selectedElement.getAttribute("x")) || 0;
-    offset.y -= parseFloat(selectedElement.getAttribute("y")) || 0;
-  }
-
-  function drag(event) {
-    if (selectedElement) {
-      event.preventDefault();
-      const coord = getMousePosition(event);
-      selectedElement.setAttribute("x", coord.x - offset.x);
-      selectedElement.setAttribute("y", coord.y - offset.y);
+    if (isDragging) {
+      const newX = mouseX - startX;
+      const newY = mouseY - startY;
+      element.setAttribute("x", newX);
+      element.setAttribute("y", newY);
+      if (element.tagName === "text") {
+        element.setAttribute("x", mouseX);
+        element.setAttribute("y", mouseY);
+      }
+    } else if (isResizing) {
+      const newWidth = startWidth + (mouseX - startX);
+      const newHeight = startHeight + (mouseY - startY);
+      element.setAttribute("width", newWidth);
+      element.setAttribute("height", newHeight);
+      if (isBackground) {
+        svgWidth = newWidth;
+        svgHeight = newHeight;
+        svg.setAttribute("width", svgWidth);
+        svg.setAttribute("height", svgHeight);
+      }
     }
   }
 
-  function endDrag() {
-    selectedElement = null;
-  }
-
-  function getMousePosition(event) {
-    const CTM = svg.getScreenCTM();
-    return {
-      x: (event.clientX - CTM.e) / CTM.a,
-      y: (event.clientY - CTM.f) / CTM.d,
-    };
+  function stopDragOrResize() {
+    isDragging = false;
+    isResizing = false;
   }
 }
 
@@ -205,41 +232,46 @@ function downloadSVG() {
 
   // Add CDATA section with API fetch logic
   const script = `
-                <![CDATA[
-                    (function () {
-                        const apiEndpoint = "${
-                          document.getElementById("api").value
-                        }";
-                        if (!apiEndpoint) return;
+    <![CDATA[
+      (function () {
+        const fgImage = document.getElementById('foreground-img');
+        const textInput = document.getElementById('svg-text');
+        if (textInput) {
+          textInput.style.display = 'none';
+        }
+        if (fgImage) {
+          fgImage.style.display = 'none';
+        }
 
-                        fetch(apiEndpoint)
-                            .then(response => response.json())
-                            .then(data => {
-                                const attributes = data.attributes;
-                                const usageCount = attributes.find(attr => attr.trait_type === "usage_count");
-                                const fgImage = document.getElementById('foreground-img');
-                                const textInput = document.getElementById('svg-text');
+        const apiEndpoint = "${document.getElementById("api").value}";
+        if (!apiEndpoint) return;
 
-                                if (usageCount && usageCount.value === 0) {
-                                    if (textInput) {
-                                      textInput.style.display = 'block';
-                                    }
-                                    if (fgImage) {
-                                      fgImage.style.display = 'block';
-                                    }
-                                } else {
-                                    if (textInput) {
-                                      textInput.style.display = 'none';
-                                    }
-                                    if (fgImage) {
-                                      fgImage.style.display = 'none';
-                                    }
-                                }
-                            })
-                            .catch(console.error);
-                    })();
-                ]]>
-            `;
+        fetch(apiEndpoint)
+          .then(response => response.json())
+          .then(data => {
+            const attributes = data.attributes;
+            const usageCount = attributes.find(attr => attr.trait_type === "usage_count");
+
+            if (usageCount && usageCount.value === 0) {
+              if (textInput) {
+                textInput.style.display = 'block';
+              }
+              if (fgImage) {
+                fgImage.style.display = 'block';
+              }
+            } else {
+              if (textInput) {
+                textInput.style.display = 'none';
+              }
+              if (fgImage) {
+                fgImage.style.display = 'none';
+              }
+            }
+          })
+          .catch(console.error);
+      })();
+    ]]>
+  `;
   source = source.replace("</svg>", `<script>${script}</script></svg>`);
 
   const url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
